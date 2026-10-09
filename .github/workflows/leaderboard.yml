@@ -1,0 +1,45 @@
+name: leaderboard
+
+on:
+  issues:
+    types: [opened]
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: leaderboard
+  cancel-in-progress: false
+
+jobs:
+  process:
+    if: github.event_name != 'issues' || github.event.issue.title == 'LB'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check the new results
+        run: node .github/scripts/process.js apply
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+      - name: Publish the table
+        run: |
+          if ! git diff --quiet leaderboard.json; then
+            git config user.name "leaderboard-bot"
+            git config user.email "leaderboard-bot@users.noreply.github.com"
+            git add leaderboard.json
+            git commit -m "Update leaderboard"
+            git push
+          fi
+      - name: Close the handled issues
+        run: node .github/scripts/process.js close
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
