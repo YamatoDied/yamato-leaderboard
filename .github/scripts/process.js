@@ -7,11 +7,11 @@
 const fs = require('fs'), os = require('os'), path = require('path'), crypto = require('crypto');
 
 const LIM = {
-  tps: 5000,          // most turns per second that anybody can really make (turns of all time may grow by this per second between two results)
+  tps: 2e6,           // FIX: was 5000. Late game makes far more turns per second than that, so every result of a strong player was rejected as "turns grew too fast"
   slack: 20000,       // plus this many turns of tolerance per result
   gapSec: 30,         // a player's results closer than this are ignored (the newer one comes later anyway)
   presNeed: 100000,   // the cheapest prestige costs this many turns (so turns of all time can never be below prestiges x this)
-  maxP: 1000, maxT: 1e18, maxC: 1e15,
+  maxP: 1000, maxT: 1e18, maxC: 1e20,   // FIX: maxC was 1e15; the game allows coins up to 1e20
   maxPlayers: 5000    // when the table is full the player who has been silent the longest is dropped
 };
 const NICK_RX = /^[A-Za-z0-9_-]{3,16}$/, AUTO_RX = /^player\d+$/i, ID_RX = /^\d{1,16}-\d{1,16}$/;
